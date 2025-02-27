@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAtom } from "jotai";
 import Link from "next/link";
 import axios from "axios";
-import { quizFormAtom } from "@/recoil/atom";  
+import { quizFormAtom } from "@/recoil/atom";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Rocket, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { NavigationBar } from "@/components/ui-components/NavigationBar";
+import Footer from "@/components/ui-components/Footer";
 
 const apiKey = process.env.NEXT_PUBLIC_API_KEY;
 
@@ -40,7 +42,7 @@ export default function QuizPage() {
 
   const [quizForm, setQuizForm] = useAtom(quizFormAtom);
 
-  
+
   const safeQuizForm = { ...defaultQuizForm, ...quizForm };
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -121,7 +123,7 @@ export default function QuizPage() {
           "label": "Technical Skills",
           "type": "checkbox",
           "options": [
-            
+
             { "value": "artificial-intelligence", "label": "Artificial Intelligence (AI)" },
             { "value": "machine-learning", "label": "Machine Learning (ML)" },
             { "value": "deep-learning", "label": "Deep Learning" },
@@ -144,7 +146,7 @@ export default function QuizPage() {
             { "value": "ui/ux-design", "label": "UI/UX Design" },
             { "value": "product-management", "label": "Product Management" },
             { "value": "entrepreneurship", "label": "Entrepreneurship" },
-            
+
             { "value": "html", "label": "HTML" },
             { "value": "css", "label": "CSS" },
             { "value": "javascript", "label": "JavaScript" },
@@ -196,7 +198,6 @@ export default function QuizPage() {
       ...prev,
       [field]: value,
     }));
-    console.log(quizForm);
   };
 
   const handleCheckboxChange = (field: string, value: string, checked: boolean) => {
@@ -205,10 +206,16 @@ export default function QuizPage() {
       if (checked) {
         return { ...prev, [field]: [...currentArray, value] };
       } else {
-        return { ...prev, [field]: currentArray.filter((item) => item !== value) };
+        return { ...prev, [field]: currentArray.filter((item: any) => item !== value) };
       }
     });
-    console.log(quizForm);
+  };
+
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+      window.scrollTo(0, 0);
+    }
   };
 
   const handleNext = () => {
@@ -235,7 +242,6 @@ export default function QuizPage() {
         handleSubmit();
       }
     }
-    console.log(quizForm);
   };
 
   const handleSubmit = async () => {
@@ -294,7 +300,7 @@ export default function QuizPage() {
           };
       };`;
     try {
-      
+
       const response = await axios({
         url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
         method: "post",
@@ -312,7 +318,7 @@ export default function QuizPage() {
       const jsonString = result.replace("```json\n", "").replace("\n```", "");
       let roadmapJson = JSON.parse(jsonString);
       console.log(roadmapJson);
-      
+
     } catch (error) {
       toast({
         title: "Error",
@@ -395,24 +401,64 @@ export default function QuizPage() {
   };
 
   return (
-    <div className="p-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>{steps[currentStep].title}</CardTitle>
-          <CardDescription>{steps[currentStep].description}</CardDescription>
-        </CardHeader>
-        <CardContent>{steps[currentStep].fields.map(renderField)}</CardContent>
-        <CardFooter className="flex justify-between">
-          <Button onClick={() => setCurrentStep((step) => step - 1)} disabled={currentStep === 0}>
-            <ArrowLeft className="mr-2" /> Back
-          </Button>
-          <Button onClick={handleNext} disabled={isSubmitting}>
-            {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : null}
-            {currentStep === steps.length - 1 ? "Submit" : "Next"}
-            <ArrowRight className="ml-2" />
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>
+    <>
+      <NavigationBar />
+      <div className="w-full h-[90dvh] flex items-center justify-center p-10">
+        <div className="w-3/4">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Career Path Quiz</h1>
+            <p className="text-muted-foreground">
+              Complete this quiz to get personalized career recommendations and a learning roadmap.
+            </p>
+          </div>
+
+          <div className="mb-8">
+            <div className="flex justify-between mb-2 text-sm">
+              <span>Step {currentStep + 1} of {steps.length}</span>
+              <span>{Math.round(((currentStep + 1) / steps.length) * 100)}% Complete</span>
+            </div>
+            <Progress value={((currentStep + 1) / steps.length) * 100} className="h-2" />
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>{steps[currentStep].title}</CardTitle>
+              <CardDescription>{steps[currentStep].description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {steps[currentStep].fields.map(renderField)}
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button
+                onClick={handleBack}
+                disabled={currentStep === 0 || isSubmitting}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+              <Button onClick={handleNext} disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : currentStep === steps.length - 1 ? (
+                  <>
+                    Submit
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                ) : (
+                  <>
+                    Next
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+      <Footer />
+    </>
   );
 }
