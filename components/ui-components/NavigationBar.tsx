@@ -1,91 +1,155 @@
-'use client'
+"use client";
+
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { X, Menu } from "lucide-react";
-// import { useRecoilValue } from "recoil";
-// import { isAuthenticatedState } from "@/atoms/authAtoms";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ModeToggle } from "@/components/ui-components/ModeToggle";
+import { Rocket, Menu, User, LogOut, BarChart, BookOpen, Home } from "lucide-react";
+import { useAuth } from "@/components/auth-provider";
 
-export const NavigationBar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const isAuthenticated = true;
+export function NavigationBar() {
+  const { user, logout } = useAuth();
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  
-  const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "Quiz", path: "/quiz" },
-    ...(isAuthenticated
-      ? [
-          { name: "Dashboard", path: "/dashboard" },
-          { name: "Roadmap", path: "/roadmap" },
-          { name: "Progress", path: "/progress" },
-        ]
-      : []),
+  const navItems = [
+    { name: "Home", href: "/", icon: <Home className="h-4 w-4 mr-2" /> },
+    { name: "Dashboard", href: "/dashboard", icon: <BarChart className="h-4 w-4 mr-2" /> },
+    { name: "Roadmap", href: "/roadmap", icon: <BookOpen className="h-4 w-4 mr-2" /> },
   ];
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
-      <div className="container flex items-center justify-between h-16 px-4 mx-auto">
-        <Link href="/" className="flex items-center">
-          <span className="text-xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
-            CareerFlow
-          </span>
-        </Link>
-        
-        <nav className="hidden md:flex items-center space-x-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              href={link.path}
-              className={`text-sm transition-colors ${
-                pathname === link.path
-                  ? "text-primary font-medium"
-                  : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-              }`}
-            >
-              {link.name}
-            </Link>
-          ))}
-          {/* <UserMenu /> */}
-        </nav>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b">
+      <div className="container flex h-16 items-center justify-between">
+        <div className="flex items-center gap-6">
+          <Link href="/" className="flex items-center gap-2 font-bold">
+            <Rocket className="h-6 w-6 text-primary" />
+            <span>CareerPath AI</span>
+          </Link>
 
-        <button className="md:hidden" onClick={toggleMenu}>
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="md:hidden absolute top-16 left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 animate-fade-in">
-          <div className="container py-4 space-y-4">
-            {navLinks.map((link) => (
+          <nav className="hidden md:flex items-center gap-6">
+            {navItems.map((item) => (
               <Link
-                key={link.path}
-                href={link.path}
-                className={`block px-4 py-2 text-sm ${
-                  location.pathname === link.path
-                    ? "text-primary font-medium"
-                    : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                key={item.href}
+                href={item.href}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  pathname === item.href ? "text-primary" : "text-muted-foreground"
                 }`}
-                onClick={() => setIsMenuOpen(false)}
               >
-                {link.name}
+                {item.name}
               </Link>
             ))}
-            <div className="px-4 pb-2">
-              {!isAuthenticated && (
-                <Button asChild size="sm" variant="secondary" className="w-full">
-                  <Link href="/login" onClick={() => setIsMenuOpen(false)}>Sign In</Link>
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <ModeToggle />
+          
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <User className="h-5 w-5" />
                 </Button>
-              )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard" className="cursor-pointer">
+                    <BarChart className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="cursor-pointer">
+                    <User className="h-4 w-4 mr-2" />
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/roadmap" className="cursor-pointer">
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Learning Roadmap
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout} className="cursor-pointer">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div className="hidden md:flex items-center gap-2">
+              <Link href="/login">
+                <Button variant="ghost">Sign In</Button>
+              </Link>
+              <Link href="/signup">
+                <Button>Sign Up</Button>
+              </Link>
             </div>
+          )}
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+      
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t">
+          <div className="container py-4 space-y-4">
+            <nav className="flex flex-col space-y-4">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center text-sm font-medium transition-colors hover:text-primary ${
+                    pathname === item.href ? "text-primary" : "text-muted-foreground"
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item.icon}
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
+            
+            {!user && (
+              <div className="flex flex-col space-y-2 pt-2 border-t">
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start">
+                    <User className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
+                  <Button className="w-full justify-start">
+                    <User className="h-4 w-4 mr-2" />
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}
     </header>
   );
-};
+}

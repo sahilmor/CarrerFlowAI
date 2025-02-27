@@ -1,300 +1,504 @@
-'use client'
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Download, ListFilter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { CourseCard, CourseProps } from "@/components/ui-components/CourseCard";
-import { RoadmapStep } from "@/components/ui-components/RoadmapStep";
+"use client";
 
-interface RoadmapStepData {
-  step: number;
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Loader2, ExternalLink, BookOpen, Code, CheckCircle2 } from "lucide-react";
+import { useAuth } from "@/components/auth-provider";
+import { NavigationBar } from "@/components/ui-components/NavigationBar";
+import Footer from "@/components/ui-components/Footer";
+
+// Types based on the provided schema
+type Course = {
+  platform: string;
+  name: string;
+  link: string;
+  focus: string;
+  completed?: boolean;
+};
+
+type Project = {
+  name: string;
+  description: string;
+  completed?: boolean;
+};
+
+type Step = {
   title: string;
   description: string;
-  skills: string[];
-  completed: boolean;
-  course: CourseProps;
-}
+  courses: Course[];
+  projects: Project[];
+};
 
-const mockRoadmap: RoadmapStepData[] = [
-  {
-    step: 1,
-    title: "HTML & CSS Fundamentals",
-    description: "Master the basics of web development with HTML and CSS.",
-    skills: ["HTML5", "CSS3", "Responsive Design"],
-    completed: true,
-    course: {
-      id: "course-1",
-      title: "HTML & CSS Essentials",
-      description: "Learn the fundamentals of web development with HTML and CSS.",
-      platform: "Codecademy",
-      duration: "8 hours",
-      level: "Beginner",
-      link: "https://example.com/course",
-      completed: true,
-    },
-  },
-  {
-    step: 2,
-    title: "JavaScript Essentials",
-    description: "Learn JavaScript programming and DOM manipulation.",
-    skills: ["JavaScript", "DOM", "ES6+"],
-    completed: true,
-    course: {
-      id: "course-2",
-      title: "JavaScript Basics",
-      description: "Introduction to JavaScript programming for beginners.",
-      platform: "freeCodeCamp",
-      duration: "10 hours",
-      level: "Beginner",
-      link: "https://example.com/course",
-      completed: true,
-    },
-  },
-  {
-    step: 3,
-    title: "Advanced JavaScript",
-    description: "Deep dive into advanced JavaScript concepts.",
-    skills: ["Closures", "Promises", "Async/Await"],
-    completed: false,
-    course: {
-      id: "course-3",
-      title: "Advanced JavaScript Concepts",
-      description: "Master complex JavaScript topics including closures, prototypes, and async patterns to build more efficient applications.",
-      platform: "Udemy",
-      duration: "12 hours",
-      level: "Intermediate",
-      link: "https://example.com/course",
-      completed: false,
-    },
-  },
-  {
-    step: 4,
-    title: "React & Frontend Frameworks",
-    description: "Build interactive UI components with React.",
-    skills: ["React", "Redux", "Hooks"],
-    completed: false,
-    course: {
-      id: "course-4",
-      title: "React & Redux Fundamentals",
-      description: "Learn the core concepts of React and state management with Redux to build interactive UIs.",
-      platform: "Coursera",
-      duration: "20 hours",
-      level: "Intermediate",
-      link: "https://example.com/course",
-      completed: false,
-    },
-  },
-  {
-    step: 5,
-    title: "Backend Development",
-    description: "Create server-side applications with Node.js.",
-    skills: ["Node.js", "Express", "MongoDB"],
-    completed: false,
-    course: {
-      id: "course-5",
-      title: "Node.js Backend Development",
-      description: "Build scalable backend services with Node.js, Express, and MongoDB.",
-      platform: "Udacity",
-      duration: "25 hours",
-      level: "Intermediate",
-      link: "https://example.com/course",
-      completed: false,
-    },
-  },
-  {
-    step: 6,
-    title: "Full Stack Projects",
-    description: "Build complete web applications from start to finish.",
-    skills: ["Full Stack", "API Design", "Authentication"],
-    completed: false,
-    course: {
-      id: "course-6",
-      title: "Full Stack Web Development",
-      description: "Create complete web applications with modern frontend and backend technologies.",
-      platform: "Pluralsight",
-      duration: "30 hours",
-      level: "Advanced",
-      link: "https://example.com/course",
-      completed: false,
-    },
-  },
-  {
-    step: 7,
-    title: "DevOps & Deployment",
-    description: "Learn to deploy and manage web applications in the cloud.",
-    skills: ["Docker", "CI/CD", "AWS/Azure"],
-    completed: false,
-    course: {
-      id: "course-7",
-      title: "DevOps for Developers",
-      description: "Master the tools and practices for deploying and managing applications in production.",
-      platform: "edX",
-      duration: "15 hours",
-      level: "Advanced",
-      link: "https://example.com/course",
-      completed: false,
-    },
-  },
-  {
-    step: 8,
-    title: "Career Preparation",
-    description: "Prepare for job interviews and build your portfolio.",
-    skills: ["Portfolio", "Technical Interviews", "Networking"],
-    completed: false,
-    course: {
-      id: "course-8",
-      title: "Technical Interview Preparation",
-      description: "Learn strategies and practice solving common coding interview questions.",
-      platform: "Educative",
-      duration: "10 hours",
-      level: "Intermediate",
-      link: "https://example.com/course",
-      completed: false,
-    },
-  },
-];
+type LearningPhase = {
+  timeline: string;
+  description: string;
+  steps: Step[];
+};
 
-const RoadmapPage = () => {
-  const [selectedStep, setSelectedStep] = useState<RoadmapStepData | null>(null);
-  const { toast } = useToast();
-  
-  const completedSteps = mockRoadmap.filter(step => step.completed).length;
-  const totalSteps = mockRoadmap.length;
-  const progress = Math.round((completedSteps / totalSteps) * 100);
+type LearningPath = {
+  Beginner: LearningPhase;
+  Intermediate: LearningPhase;
+  Advanced: LearningPhase;
+};
 
-  const handleStepClick = (step: RoadmapStepData) => {
-    setSelectedStep(step);
+export default function RoadmapPage() {
+  const { user, isLoading: authLoading } = useAuth();
+  const router = useRouter();
+  const [learningPath, setLearningPath] = useState<LearningPath | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("beginner");
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      // Check if there's quiz data in localStorage
+      const quizData = localStorage.getItem("quizData");
+      if (!quizData) {
+        router.push("/quiz");
+        return;
+      }
+    }
+    
+    // Fetch or mock learning path data
+    const fetchLearningPath = async () => {
+      try {
+        // In a real app, this would be an API call to your backend
+        // For now, we'll use mock data
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Mock learning path data
+        const mockLearningPath: LearningPath = {
+          Beginner: {
+            timeline: "1-3 months",
+            description: "Build a strong foundation in web development fundamentals",
+            steps: [
+              {
+                title: "HTML & CSS Fundamentals",
+                description: "Learn the building blocks of web development",
+                courses: [
+                  {
+                    platform: "freeCodeCamp",
+                    name: "Responsive Web Design Certification",
+                    link: "https://www.freecodecamp.org/learn/responsive-web-design/",
+                    focus: "HTML, CSS, Responsive Design",
+                    completed: true
+                  },
+                  {
+                    platform: "Udemy",
+                    name: "Modern HTML & CSS From The Beginning",
+                    link: "https://www.udemy.com/course/modern-html-css-from-the-beginning/",
+                    focus: "HTML5, CSS3, Flexbox, Grid",
+                    completed: false
+                  }
+                ],
+                projects: [
+                  {
+                    name: "Personal Portfolio Website",
+                    description: "Create a responsive portfolio website to showcase your projects",
+                    completed: true
+                  }
+                ]
+              },
+              {
+                title: "JavaScript Basics",
+                description: "Learn the fundamentals of JavaScript programming",
+                courses: [
+                  {
+                    platform: "freeCodeCamp",
+                    name: "JavaScript Algorithms and Data Structures",
+                    link: "https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/",
+                    focus: "JavaScript, Algorithms, Data Structures",
+                    completed: false
+                  },
+                  {
+                    platform: "Udemy",
+                    name: "Modern JavaScript From The Beginning",
+                    link: "https://www.udemy.com/course/modern-javascript-from-the-beginning/",
+                    focus: "JavaScript, DOM, Async JS",
+                    completed: false
+                  }
+                ],
+                projects: [
+                  {
+                    name: "Interactive Form Validation",
+                    description: "Build a form with client-side validation using JavaScript",
+                    completed: false
+                  },
+                  {
+                    name: "Weather App",
+                    description: "Create a weather application using a public API",
+                    completed: false
+                  }
+                ]
+              }
+            ]
+          },
+          Intermediate: {
+            timeline: "3-6 months",
+            description: "Expand your skills with modern frameworks and backend development",
+            steps: [
+              {
+                title: "React Fundamentals",
+                description: "Learn the most popular JavaScript library for building user interfaces",
+                courses: [
+                  {
+                    platform: "Udemy",
+                    name: "React - The Complete Guide",
+                    link: "https://www.udemy.com/course/react-the-complete-guide-incl-redux/",
+                    focus: "React, Hooks, Context API",
+                    completed: false
+                  },
+                  {
+                    platform: "Scrimba",
+                    name: "The Frontend Developer Career Path",
+                    link: "https://scrimba.com/learn/frontend",
+                    focus: "React, JavaScript, CSS",
+                    completed: false
+                  }
+                ],
+                projects: [
+                  {
+                    name: "Task Management App",
+                    description: "Build a task management application with React",
+                    completed: false
+                  }
+                ]
+              },
+              {
+                title: "Node.js & Express",
+                description: "Learn server-side JavaScript with Node.js and Express",
+                courses: [
+                  {
+                    platform: "Udemy",
+                    name: "Node.js API Masterclass",
+                    link: "https://www.udemy.com/course/nodejs-api-masterclass/",
+                    focus: "Node.js, Express, MongoDB",
+                    completed: false
+                  },
+                  {
+                    platform: "YouTube",
+                    name: "Node.js Tutorial for Beginners",
+                    link: "https://www.youtube.com/watch?v=TlB_eWDSMt4",
+                    focus: "Node.js Basics",
+                    completed: false
+                  }
+                ],
+                projects: [
+                  {
+                    name: "RESTful API",
+                    description: "Create a RESTful API with Node.js and Express",
+                    completed: false
+                  }
+                ]
+              }
+            ]
+          },
+          Advanced: {
+            timeline: "6-12 months",
+            description: "Master advanced concepts and specialize in your chosen area",
+            steps: [
+              {
+                title: "Full Stack Development",
+                description: "Combine frontend and backend skills to build complete applications",
+                courses: [
+                  {
+                    platform: "Udemy",
+                    name: "MERN Stack Front To Back",
+                    link: "https://www.udemy.com/course/mern-stack-front-to-back/",
+                    focus: "MongoDB, Express, React, Node.js",
+                    completed: false
+                  },
+                  {
+                    platform: "Coursera",
+                    name: "Full Stack Web Development with React",
+                    link: "https://www.coursera.org/specializations/full-stack-react",
+                    focus: "React, Node.js, MongoDB",
+                    completed: false
+                  }
+                ],
+                projects: [
+                  {
+                    name: "E-commerce Platform",
+                    description: "Build a full-featured e-commerce platform with user authentication, product catalog, and payment processing",
+                    completed: false
+                  }
+                ]
+              },
+              {
+                title: "DevOps & Deployment",
+                description: "Learn to deploy and manage applications in production",
+                courses: [
+                  {
+                    platform: "Udemy",
+                    name: "Docker and Kubernetes: The Complete Guide",
+                    link: "https://www.udemy.com/course/docker-and-kubernetes-the-complete-guide/",
+                    focus: "Docker, Kubernetes, CI/CD",
+                    completed: false
+                  },
+                  {
+                    platform: "A Cloud Guru",
+                    name: "AWS Certified Developer - Associate",
+                    link: "https://acloudguru.com/course/aws-certified-developer-associate",
+                    focus: "AWS, Cloud Deployment",
+                    completed: false
+                  }
+                ],
+                projects: [
+                  {
+                    name: "Containerized Application Deployment",
+                    description: "Deploy a full-stack application using Docker and a cloud provider",
+                    completed: false
+                  }
+                ]
+              }
+            ]
+          }
+        };
+        
+        setLearningPath(mockLearningPath);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching learning path:", error);
+        setIsLoading(false);
+      }
+    };
+    
+    fetchLearningPath();
+  }, [router, user, authLoading]);
+
+  const handleMarkCompleted = (
+    phase: keyof LearningPath,
+    stepIndex: number,
+    itemType: 'course' | 'project',
+    itemIndex: number
+  ) => {
+    if (!learningPath) return;
+    
+    const updatedLearningPath = { ...learningPath };
+    
+    if (itemType === 'course') {
+      updatedLearningPath[phase].steps[stepIndex].courses[itemIndex].completed = 
+        !updatedLearningPath[phase].steps[stepIndex].courses[itemIndex].completed;
+    } else {
+      updatedLearningPath[phase].steps[stepIndex].projects[itemIndex].completed = 
+        !updatedLearningPath[phase].steps[stepIndex].projects[itemIndex].completed;
+    }
+    
+    setLearningPath(updatedLearningPath);
+    
+    // In a real app, you would save this to your backend
+    // saveProgress(updatedLearningPath);
   };
 
-  const handleDownload = () => {
-    toast({
-      title: "Roadmap Downloaded",
-      description: "Your career roadmap has been downloaded as a PDF.",
-    });
-  };
-
-  return (
-    <div className="min-h-screen pt-20 pb-12 animate-fade-in">
-      <div className="container max-w-4xl mx-auto px-4">
-        <header className="mb-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-            <div>
-              <h1 className="text-3xl font-medium mb-2">Your Career Roadmap</h1>
-              <p className="text-muted-foreground">
-                Your personalized path to becoming a Full Stack Developer
-              </p>
-            </div>
-            <div className="flex gap-3 mt-4 md:mt-0">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex items-center"
-                onClick={handleDownload}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Download PDF
-              </Button>
-              <Button variant="outline" size="sm" className="flex items-center">
-                <ListFilter className="mr-2 h-4 w-4" />
-                Filter
-              </Button>
-            </div>
-          </div>
-          
-          <Card className="glass-card">
-            <CardContent className="p-6 space-y-4">
-              <div className="flex justify-between text-sm mb-1">
-                <span>Overall Progress</span>
-                <span className="font-medium">{progress}%</span>
-              </div>
-              <Progress value={progress} className="h-2" />
-              <div className="flex justify-between text-sm">
-                <span>{completedSteps} of {totalSteps} steps completed</span>
-                <span className="font-medium">{totalSteps - completedSteps} remaining</span>
-              </div>
-            </CardContent>
-          </Card>
-        </header>
-
-        {/* Roadmap Timeline */}
-        <div className="mb-10 pl-4">
-          {mockRoadmap.map((step, index) => (
-            <RoadmapStep
-              key={index}
-              step={step.step}
-              title={step.title}
-              description={step.description}
-              skills={step.skills}
-              completed={step.completed}
-              course={step.course}
-              onClick={() => handleStepClick(step)}
-            />
-          ))}
+  if (isLoading || authLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-lg font-medium">Loading your learning roadmap...</p>
         </div>
       </div>
+    );
+  }
 
-      {/* Selected Step Dialog */}
-      <Dialog open={!!selectedStep} onOpenChange={() => setSelectedStep(null)}>
-        {selectedStep && (
-          <DialogContent className="max-w-2xl glass-card">
-            <DialogHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <DialogTitle className="text-2xl">
-                    {selectedStep.title}
-                  </DialogTitle>
-                  <DialogDescription className="mt-1">
-                    Step {selectedStep.step} of {totalSteps}
-                  </DialogDescription>
-                </div>
-                {selectedStep.completed && (
-                  <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                    Completed
-                  </Badge>
-                )}
+  return (
+    <div className="flex min-h-screen flex-col">
+      <NavigationBar />
+      <main className="flex-1 container py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Your Learning Roadmap</h1>
+          <p className="text-muted-foreground">
+            Follow this personalized learning path to achieve your career goals
+          </p>
+        </div>
+
+        {learningPath ? (
+          <Tabs defaultValue="beginner" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="beginner">Beginner</TabsTrigger>
+              <TabsTrigger value="intermediate">Intermediate</TabsTrigger>
+              <TabsTrigger value="advanced">Advanced</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="beginner" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Beginner Phase</CardTitle>
+                  <CardDescription>
+                    Timeline: {learningPath.Beginner.timeline} • {learningPath.Beginner.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <RoadmapPhase 
+                    phase={learningPath.Beginner} 
+                    phaseKey="Beginner" 
+                    onMarkCompleted={handleMarkCompleted} 
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="intermediate" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Intermediate Phase</CardTitle>
+                  <CardDescription>
+                    Timeline: {learningPath.Intermediate.timeline} • {learningPath.Intermediate.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <RoadmapPhase 
+                    phase={learningPath.Intermediate} 
+                    phaseKey="Intermediate" 
+                    onMarkCompleted={handleMarkCompleted} 
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="advanced" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Advanced Phase</CardTitle>
+                  <CardDescription>
+                    Timeline: {learningPath.Advanced.timeline} • {learningPath.Advanced.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <RoadmapPhase 
+                    phase={learningPath.Advanced} 
+                    phaseKey="Advanced" 
+                    onMarkCompleted={handleMarkCompleted} 
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-lg text-muted-foreground">No learning path found. Please complete the career quiz.</p>
+            <Button className="mt-4" onClick={() => router.push("/quiz")}>
+              Take Career Quiz
+            </Button>
+          </div>
+        )}
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+interface RoadmapPhaseProps {
+  phase: LearningPhase;
+  phaseKey: keyof LearningPath;
+  onMarkCompleted: (
+    phase: keyof LearningPath,
+    stepIndex: number,
+    itemType: 'course' | 'project',
+    itemIndex: number
+  ) => void;
+}
+
+function RoadmapPhase({ phase, phaseKey, onMarkCompleted }: RoadmapPhaseProps) {
+  return (
+    <div className="space-y-6">
+      {phase.steps.map((step, stepIndex) => (
+        <div key={stepIndex} className="border rounded-lg p-4">
+          <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+          <p className="text-muted-foreground mb-4">{step.description}</p>
+          
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-lg font-medium flex items-center mb-2">
+                <BookOpen className="h-5 w-5 mr-2 text-primary" />
+                Recommended Courses
+              </h4>
+              <div className="space-y-3">
+                {step.courses.map((course, courseIndex) => (
+                  <div 
+                    key={courseIndex} 
+                    className={`border rounded-md p-3 ${course.completed ? 'bg-primary/5 border-primary/20' : ''}`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h5 className="font-medium">{course.name}</h5>
+                        <p className="text-sm text-muted-foreground">{course.platform} • Focus: {course.focus}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => window.open(course.link, '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                        <Button 
+                          variant={course.completed ? "default" : "outline"} 
+                          size="sm"
+                          onClick={() => onMarkCompleted(phaseKey, stepIndex, 'course', courseIndex)}
+                        >
+                          {course.completed ? (
+                            <>
+                              <CheckCircle2 className="h-4 w-4 mr-1" />
+                              Completed
+                            </>
+                          ) : (
+                            "Mark Complete"
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </DialogHeader>
-            <div className="space-y-6">
+            </div>
+            
+            {step.projects.length > 0 && (
               <div>
-                <h3 className="font-medium mb-2">Description</h3>
-                <p className="text-muted-foreground">{selectedStep.description}</p>
-              </div>
-              
-              <div>
-                <h3 className="font-medium mb-2">Skills You'll Learn</h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedStep.skills.map((skill, i) => (
-                    <Badge key={i} variant="secondary">
-                      {skill}
-                    </Badge>
+                <h4 className="text-lg font-medium flex items-center mb-2">
+                  <Code className="h-5 w-5 mr-2 text-primary" />
+                  Projects
+                </h4>
+                <div className="space-y-3">
+                  {step.projects.map((project, projectIndex) => (
+                    <div 
+                      key={projectIndex} 
+                      className={`border rounded-md p-3 ${project.completed ? 'bg-primary/5 border-primary/20' : ''}`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h5 className="font-medium">{project.name}</h5>
+                          <p className="text-sm text-muted-foreground">{project.description}</p>
+                        </div>
+                        <Button 
+                          variant={project.completed ? "default" : "outline"} 
+                          size="sm"
+                          onClick={() => onMarkCompleted(phaseKey, stepIndex, 'project', projectIndex)}
+                        >
+                          {project.completed ? (
+                            <>
+                              <CheckCircle2 className="h-4 w-4 mr-1" />
+                              Completed
+                            </>
+                          ) : (
+                            "Mark Complete"
+                          )}
+                        </Button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
-              
-              <div>
-                <h3 className="font-medium mb-3">Recommended Course</h3>
-                <CourseCard 
-                  course={selectedStep.course} 
-                  onMarkComplete={selectedStep.completed ? undefined : (id) => {
-                    // This would update the course completion status in a real app
-                    toast({
-                      title: "Course Marked as Complete",
-                      description: "Your progress has been updated.",
-                    });
-                    setSelectedStep(null);
-                  }} 
-                />
-              </div>
-            </div>
-          </DialogContent>
-        )}
-      </Dialog>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   );
-};
-
-export default RoadmapPage;
+}
