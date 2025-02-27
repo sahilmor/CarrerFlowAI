@@ -12,6 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import Footer from "@/components/ui-components/Footer";
+import ContactSection from "@/components/ui-components/ContactSection";
 
 const LandingPage = () => {
   // const navigate = useNavigate();
@@ -45,6 +47,7 @@ const LandingPage = () => {
 
   return (
     <div className="flex flex-col min-h-screen pt-16">
+      <NavigationBar />
       
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center px-4 py-20 md:py-32 animate-fade-down">
@@ -78,8 +81,8 @@ const LandingPage = () => {
         <div className="container max-w-6xl mx-auto px-4">
 
           <div className="flex gap-4 justify-center items-center">
-            {features.map((feature) => (
-              <Card className="">
+            {features.map((feature, index) => (
+              <Card key={index}>
                 <CardHeader>
                   <CardTitle>{feature.icon}</CardTitle>
                   <CardDescription>{feature.title}</CardDescription>
@@ -110,8 +113,9 @@ const LandingPage = () => {
           </Link>
         </div>
       </section>
+      <ContactSection />
 
-     
+     <Footer />
     </div>
   );
 };

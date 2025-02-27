@@ -5,10 +5,13 @@ import { X, Menu } from "lucide-react";
 // import { useRecoilValue } from "recoil";
 // import { isAuthenticatedState } from "@/atoms/authAtoms";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export const NavigationBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isAuthenticated = true;
+  const pathname = usePathname();
+
   
   const navLinks = [
     { name: "Home", path: "/" },
@@ -39,7 +42,7 @@ export const NavigationBar = () => {
               key={link.path}
               href={link.path}
               className={`text-sm transition-colors ${
-                location.pathname === link.path
+                pathname === link.path
                   ? "text-primary font-medium"
                   : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
               }`}
