@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAtom } from "jotai";
 import Link from "next/link";
+import axios from "axios";
+import { quizFormAtom } from "@/recoil/atom";  
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,31 +17,40 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Rocket, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import axios from 'axios';
 
 const apiKey = process.env.NEXT_PUBLIC_API_KEY;
-type QuizStep = {
-  title: string;
-  description: string;
-  fields: any[];
+
+
+
+
+const defaultQuizForm = {
+  name: "",
+  email: "",
+  currentRole: "",
+  yearsExperience: "",
+  educationLevel: "",
+  skills: [],
+  interests: [],
+  careerGoals: ""
 };
 
 export default function QuizPage() {
   const router = useRouter();
   const { toast } = useToast();
+
+  const [quizForm, setQuizForm] = useAtom(quizFormAtom);
+
+  
+  const safeQuizForm = { ...defaultQuizForm, ...quizForm };
+
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    currentRole: "",
-    yearsExperience: "",
-    educationLevel: "",
-    skills: [] as string[],
-    interests: [] as string[],
-    careerGoals: "",
-  });
 
+  type QuizStep = {
+    title: string;
+    description: string;
+    fields: any[];
+  };
   const steps: QuizStep[] = [
     {
       title: "Personal Information",
@@ -108,7 +121,7 @@ export default function QuizPage() {
           "label": "Technical Skills",
           "type": "checkbox",
           "options": [
-            // Trending Skills
+            
             { "value": "artificial-intelligence", "label": "Artificial Intelligence (AI)" },
             { "value": "machine-learning", "label": "Machine Learning (ML)" },
             { "value": "deep-learning", "label": "Deep Learning" },
@@ -131,7 +144,7 @@ export default function QuizPage() {
             { "value": "ui/ux-design", "label": "UI/UX Design" },
             { "value": "product-management", "label": "Product Management" },
             { "value": "entrepreneurship", "label": "Entrepreneurship" },
-            // Beginner Skills
+            
             { "value": "html", "label": "HTML" },
             { "value": "css", "label": "CSS" },
             { "value": "javascript", "label": "JavaScript" },
@@ -178,28 +191,24 @@ export default function QuizPage() {
       ],
     },
   ];
-
-  const handleInputChange = (field: string, value: any) => {
-    setFormData({
-      ...formData,
+  const handleInputChange = (field: string, value: string) => {
+    setQuizForm((prev) => ({
+      ...prev,
       [field]: value,
-    });
+    }));
+    console.log(quizForm);
   };
 
   const handleCheckboxChange = (field: string, value: string, checked: boolean) => {
-    if (checked) {
-      setFormData({
-        ...formData,
-        [field]: [...(formData[field as keyof typeof formData] as string[]), value],
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [field]: (formData[field as keyof typeof formData] as string[]).filter(
-          (item) => item !== value
-        ),
-      });
-    }
+    setQuizForm((prev: any) => {
+      const currentArray = Array.isArray(prev[field]) ? prev[field] : [];
+      if (checked) {
+        return { ...prev, [field]: [...currentArray, value] };
+      } else {
+        return { ...prev, [field]: currentArray.filter((item) => item !== value) };
+      }
+    });
+    console.log(quizForm);
   };
 
   const handleNext = () => {
@@ -207,17 +216,14 @@ export default function QuizPage() {
     let isValid = true;
 
     for (const field of currentFields) {
-      if (field.required) {
-        const value = formData[field.name as keyof typeof formData];
-        if (!value || (Array.isArray(value) && value.length === 0)) {
-          isValid = false;
-          toast({
-            title: "Missing information",
-            description: `Please fill in the ${field.label} field.`,
-            variant: "destructive",
-          });
-          break;
-        }
+      const value = safeQuizForm[field.name as keyof typeof safeQuizForm]; if (field.required && (!value || (Array.isArray(value) && value.length === 0))) {
+        isValid = false;
+        toast({
+          title: "Missing information",
+          description: `Please fill in the ${field.label} field.`,
+          variant: "destructive",
+        });
+        break;
       }
     }
 
@@ -229,71 +235,66 @@ export default function QuizPage() {
         handleSubmit();
       }
     }
+    console.log(quizForm);
   };
-
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-      window.scrollTo(0, 0);
-    }
-  };
-
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
     const currentQuestion = `You are an experienced career counselor and roadmap planner, helping students and early-career developers shape their learning paths to become industry-ready. Below is the profile of a user in JSON format. Based on this, generate a step-by-step learning roadmap that guides the user from their current stage to their dream role. 
-    The output should be strictly in JSON format with clear sections for each phase of the roadmap (Beginner, Intermediate, Advanced) along with estimated timelines, recommended best courses of some platform like udemy,coursera and likedin learing along with their links, and key projects to build at each step.
-    User Profile (JSON):
-    ${JSON.stringify(formData)}
-
-    below i have the data type of the roadmap in JSON format strictly follow this format:
-    type Course = {
-        platform: string;
-        name: string;
-        link: string;
-        focus: string;
-    };
-
-    type Project = {
-        name: string;
-        description: string;
-    };
-
-    type Step = {
-        title: string;
-        description: string;
-        courses: Course[];
-        projects: Project[];
-    };
-
-    type LearningPhase = {
-        timeline: string;
-        description: string;
-        steps: Step[];
-    };
-
-    type LearningPath = {
-        Beginner: LearningPhase;
-        Intermediate: LearningPhase;
-        Advanced: LearningPhase;
-    };
-
-    type RoadmapData = {
-        roadmap: {
-            user: {
-                name: string;
-                skills: string[];
-                experience: '0 - 5 years' | '5 - 10 years' | '10+ years';
-                collegeStudent: boolean;
-                dream: string;
-                currentRole: string;
-                areaOfInterest: string[];
-            };
-            learning_path: LearningPath;
-        };
-    };`;
+      The output should be strictly in JSON format with clear sections for each phase of the roadmap (Beginner, Intermediate, Advanced) along with estimated timelines, recommended one best course on the whole internet along with its link and the skills that  will be enhanced by user after comleting the course, and key projects to build at each step.
+      User Profile (JSON):
+      ${JSON.stringify(quizForm)}
+  
+      below i have the data type of the roadmap in JSON format strictly follow this format:
+      type Course = {
+          platform: string;
+          name: string;
+          link: string;
+          focus: string;
+          skills: string[];
+          description : string;
+      };
+  
+      type Project = {
+          name: string;
+          description: string;
+      };
+  
+      type Step = {
+          title: string;
+          description: string;
+          courses: Course;
+          projects: Project[];
+      };
+  
+      type LearningPhase = {
+          timeline: string;
+          description: string;
+          steps: Step[];
+      };
+  
+      type LearningPath = {
+          Beginner: LearningPhase;
+          Intermediate: LearningPhase;
+          Advanced: LearningPhase;
+      };
+  
+      type RoadmapData = {
+          roadmap: {
+              user: {
+                  name: string;
+                  skills: string[];
+                  experience: string;
+                  collegeStudent: boolean;
+                  dream: string;
+                  currentRole: string;
+                  areaOfInterest: string[];
+              };
+              learning_path: LearningPath;
+          };
+      };`;
     try {
-      // await new Promise((resolve) => setTimeout(resolve, 3000));
+      
       const response = await axios({
         url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
         method: "post",
@@ -311,7 +312,7 @@ export default function QuizPage() {
       const jsonString = result.replace("```json\n", "").replace("\n```", "");
       let roadmapJson = JSON.parse(jsonString);
       console.log(roadmapJson);
-      // router.push("/dashboard");
+      
     } catch (error) {
       toast({
         title: "Error",
@@ -323,48 +324,45 @@ export default function QuizPage() {
     }
   };
 
+
   const renderField = (field: any) => {
+    //@ts-ignore
+    const fieldValue = safeQuizForm[field.name];
     switch (field.type) {
       case "input":
         return (
-          <div className="space-y-2" key={field.name}>
+          <div key={field.name}>
             <Label htmlFor={field.name}>{field.label}</Label>
             <Input
               id={field.name}
-              placeholder={field.placeholder}
-              value={formData[field.name as keyof typeof formData] as string}
+              value={fieldValue}
               onChange={(e) => handleInputChange(field.name, e.target.value)}
+              placeholder={field.placeholder}
             />
           </div>
         );
+
       case "textarea":
         return (
-          <div className="space-y-2" key={field.name}>
+          <div key={field.name}>
             <Label htmlFor={field.name}>{field.label}</Label>
             <Textarea
               id={field.name}
-              placeholder={field.placeholder}
-              value={formData[field.name as keyof typeof formData] as string}
+              value={fieldValue}
               onChange={(e) => handleInputChange(field.name, e.target.value)}
-              className="min-h-[120px]"
+              placeholder={field.placeholder}
             />
           </div>
         );
       case "radio":
         return (
-          <div className="space-y-2" key={field.name}>
+          <div key={field.name}>
             <Label>{field.label}</Label>
-            <RadioGroup
-              value={formData[field.name as keyof typeof formData] as string}
-              onValueChange={(value) => handleInputChange(field.name, value)}
-              className="space-y-2"
-            >
+            <RadioGroup value={fieldValue} onValueChange={(value) => handleInputChange(field.name, value)}>
               {field.options.map((option: any) => (
-                <div className="flex items-center space-x-2" key={option.value}>
+                <div key={option.value} className="flex items-center space-x-2">
                   <RadioGroupItem value={option.value} id={`${field.name}-${option.value}`} />
-                  <Label htmlFor={`${field.name}-${option.value}`} className="cursor-pointer">
-                    {option.label}
-                  </Label>
+                  <Label htmlFor={`${field.name}-${option.value}`}>{option.label}</Label>
                 </div>
               ))}
             </RadioGroup>
@@ -372,87 +370,49 @@ export default function QuizPage() {
         );
       case "checkbox":
         return (
-          <div className="space-y-2" key={field.name}>
+          <div key={field.name}>
             <Label>{field.label}</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {field.options.map((option: any) => (
-                <div className="flex items-center space-x-2" key={option.value}>
+                <div key={option.value} className="flex items-center space-x-2">
                   <Checkbox
                     id={`${field.name}-${option.value}`}
-                    checked={(formData[field.name as keyof typeof formData] as string[]).includes(option.value)}
+                    checked={fieldValue.includes(option.value)}
                     onCheckedChange={(checked) =>
-                      handleCheckboxChange(field.name, option.value, checked as boolean)
+                      handleCheckboxChange(field.name, option.value, !!checked)
                     }
                   />
-                  <Label htmlFor={`${field.name}-${option.value}`} className="cursor-pointer">
-                    {option.label}
-                  </Label>
+                  <Label htmlFor={`${field.name}-${option.value}`}>{option.label}</Label>
                 </div>
               ))}
             </div>
           </div>
         );
+
       default:
         return null;
     }
   };
 
   return (
-    <div className="w-full h-[100dvh] flex items-center justify-center p-10">
-      <div className="w-3/4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Career Path Quiz</h1>
-          <p className="text-muted-foreground">
-            Complete this quiz to get personalized career recommendations and a learning roadmap.
-          </p>
-        </div>
-
-        <div className="mb-8">
-          <div className="flex justify-between mb-2 text-sm">
-            <span>Step {currentStep + 1} of {steps.length}</span>
-            <span>{Math.round(((currentStep + 1) / steps.length) * 100)}% Complete</span>
-          </div>
-          <Progress value={((currentStep + 1) / steps.length) * 100} className="h-2" />
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{steps[currentStep].title}</CardTitle>
-            <CardDescription>{steps[currentStep].description}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {steps[currentStep].fields.map(renderField)}
-          </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              disabled={currentStep === 0 || isSubmitting}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-            <Button onClick={handleNext} disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Analyzing...
-                </>
-              ) : currentStep === steps.length - 1 ? (
-                <>
-                  Submit
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </>
-              ) : (
-                <>
-                  Next
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
+    <div className="p-10">
+      <Card>
+        <CardHeader>
+          <CardTitle>{steps[currentStep].title}</CardTitle>
+          <CardDescription>{steps[currentStep].description}</CardDescription>
+        </CardHeader>
+        <CardContent>{steps[currentStep].fields.map(renderField)}</CardContent>
+        <CardFooter className="flex justify-between">
+          <Button onClick={() => setCurrentStep((step) => step - 1)} disabled={currentStep === 0}>
+            <ArrowLeft className="mr-2" /> Back
+          </Button>
+          <Button onClick={handleNext} disabled={isSubmitting}>
+            {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : null}
+            {currentStep === steps.length - 1 ? "Submit" : "Next"}
+            <ArrowRight className="ml-2" />
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

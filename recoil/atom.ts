@@ -1,27 +1,16 @@
-import { atom, selector } from "recoil";
+'use client';
+
+import { atom } from 'jotai';
 
 export const quizFormAtom = atom({
-  key: "quizFormState",
-  default: {
     name: "",
     email: "",
     currentRole: "",
     yearsExperience: "",
     educationLevel: "",
-    skills: [],
-    interests: [],
-    careerGoals: "",
-    preferredWorkEnvironment: "",
-    learningStyle: "",
-  },
+    skills: [] as string[],
 });
-
-export const quizFormSelector = selector({
-  key: "quizFormSelector",
-  get: ({ get }) => {
-    return get(quizFormAtom);
-  },
-  set: ({ set }, newValue) => {
-    set(quizFormAtom, newValue);
-  },
-});
+export const quizFormSelector = atom(
+  (get) => get(quizFormAtom),  
+  (get, set, newValue) => set(quizFormAtom, newValue as any)  
+);
