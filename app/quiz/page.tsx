@@ -342,11 +342,12 @@ export default function QuizPage() {
   };
 
   return (
-    <div className="container max-w-4xl py-10">
-      <Link href="/" className="flex items-center gap-2 font-bold mb-8">
+    <div className="w-full h-[100dvh] flex items-center justify-center p-10">
+    <div className="w-3/4">
+      {/* <Link href="/" className="flex items-center gap-2 font-bold mb-8">
         <Rocket className="h-6 w-6 text-primary" />
         <span>CareerPath AI</span>
-      </Link>
+      </Link> */}
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Career Path Quiz</h1>
@@ -400,6 +401,7 @@ export default function QuizPage() {
           </Button>
         </CardFooter>
       </Card>
+    </div>
     </div>
   );
 }

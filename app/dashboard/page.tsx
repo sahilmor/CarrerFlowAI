@@ -9,6 +9,8 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Rocket, BookOpen, BarChart, User, LogOut, ChevronRight, Award, Sparkles } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
+import { NavigationBar } from "@/components/ui-components/NavigationBar";
+import Footer from "@/components/ui-components/Footer";
 
 type CareerPath = {
   title: string;
@@ -39,7 +41,7 @@ export default function DashboardPage() {
   useEffect(() => {
     // Check if user completed the quiz
     const quizData = localStorage.getItem("quizData");
-    
+
     if (!quizData && !user) {
       router.push("/quiz");
       return;
@@ -50,7 +52,7 @@ export default function DashboardPage() {
       try {
         // In a real app, this would be an API call to your backend
         await new Promise((resolve) => setTimeout(resolve, 1500));
-        
+
         // Mock career path data
         const mockCareerPath: CareerPath = {
           title: "Full Stack Developer",
@@ -110,14 +112,14 @@ export default function DashboardPage() {
             },
           ],
         };
-        
+
         setCareerPath(mockCareerPath);
-        
+
         // Calculate progress
         const completedCourses = mockCareerPath.courses.filter(course => course.completed).length;
         const totalCourses = mockCareerPath.courses.length;
         setProgress((completedCourses / totalCourses) * 100);
-        
+
         setLoading(false);
       } catch (error) {
         console.error("Error fetching career path:", error);
@@ -130,13 +132,13 @@ export default function DashboardPage() {
 
   const handleMarkAsCompleted = (courseId: string) => {
     if (careerPath) {
-      const updatedCourses = careerPath.courses.map(course => 
+      const updatedCourses = careerPath.courses.map(course =>
         course.id === courseId ? { ...course, completed: true } : course
       );
-      
+
       const updatedCareerPath = { ...careerPath, courses: updatedCourses };
       setCareerPath(updatedCareerPath);
-      
+
       // Recalculate progress
       const completedCourses = updatedCourses.filter(course => course.completed).length;
       const totalCourses = updatedCourses.length;
@@ -159,29 +161,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 border-b bg-background">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2 font-bold">
-            <Rocket className="h-6 w-6 text-primary" />
-            <span>CareerPath AI</span>
-          </Link>
-          <nav className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-sm font-medium hover:underline underline-offset-4">
-              Dashboard
-            </Link>
-            <Link href="/roadmap" className="text-sm font-medium hover:underline underline-offset-4">
-              Roadmap
-            </Link>
-            <Link href="/progress" className="text-sm font-medium hover:underline underline-offset-4">
-              Progress
-            </Link>
-            <Button variant="ghost" size="icon" onClick={logout}>
-              <LogOut className="h-5 w-5" />
-              <span className="sr-only">Log out</span>
-            </Button>
-          </nav>
-        </div>
-      </header>
+      <NavigationBar />
       <main className="flex-1 container py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Welcome{user ? `, ${user.name}` : ""}!</h1>
@@ -248,7 +228,7 @@ export default function DashboardPage() {
                     </div>
                     <Progress value={progress} className="h-2" />
                   </div>
-                  
+
                   <div className="pt-4">
                     <h3 className="text-lg font-semibold mb-4">🚀 Best Next Course for You</h3>
                     {nextRecommendedCourse ? (
@@ -265,14 +245,14 @@ export default function DashboardPage() {
                           <span>{nextRecommendedCourse.duration}</span>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-2">
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             className="flex-1"
                             onClick={() => window.open(nextRecommendedCourse.url, '_blank')}
                           >
                             View Course
                           </Button>
-                          <Button 
+                          <Button
                             className="flex-1"
                             onClick={() => handleMarkAsCompleted(nextRecommendedCourse.id)}
                           >
@@ -394,6 +374,7 @@ export default function DashboardPage() {
           </Card>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
