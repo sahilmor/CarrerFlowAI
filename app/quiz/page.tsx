@@ -15,6 +15,7 @@ import { Rocket, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import axios from 'axios';
 
+const apiKey = process.env.NEXT_PUBLIC_API_KEY;
 type QuizStep = {
   title: string;
   description: string;
@@ -293,8 +294,9 @@ export default function QuizPage() {
     };`;
     try {
       // await new Promise((resolve) => setTimeout(resolve, 3000));
+      console.log(apiKey)
       const response = await axios({
-        url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyBfydMVeTuKMaIF2DekcUE9hGrYkGXj3A0",
+        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
         method: "post",
         data: {
           contents: [{ parts: [{ text: currentQuestion }] }],
@@ -438,10 +440,10 @@ export default function QuizPage() {
                   Analyzing...
                 </>
               ) : currentStep === steps.length - 1 ? (
-                <Button>
+                <>
                   Submit
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                </>
               ) : (
                 <>
                   Next
