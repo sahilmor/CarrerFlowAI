@@ -39,7 +39,7 @@ export default function DashboardPage() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // Check if user completed the quiz
+    
     const quizData = localStorage.getItem("quizData");
 
     if (!quizData && !user) {
@@ -47,13 +47,13 @@ export default function DashboardPage() {
       return;
     }
 
-    // Simulate API call to get career path
+    
     const fetchCareerPath = async () => {
       try {
-        // In a real app, this would be an API call to your backend
+        
         await new Promise((resolve) => setTimeout(resolve, 1500));
 
-        // Mock career path data
+        
         const mockCareerPath: CareerPath = {
           title: "Full Stack Developer",
           description: "Based on your skills and interests, you're well-suited for a career as a Full Stack Developer. This role combines front-end and back-end development skills to build complete web applications.",
@@ -115,7 +115,7 @@ export default function DashboardPage() {
 
         setCareerPath(mockCareerPath);
 
-        // Calculate progress
+        
         const completedCourses = mockCareerPath.courses.filter(course => course.completed).length;
         const totalCourses = mockCareerPath.courses.length;
         setProgress((completedCourses / totalCourses) * 100);
@@ -139,7 +139,7 @@ export default function DashboardPage() {
       const updatedCareerPath = { ...careerPath, courses: updatedCourses };
       setCareerPath(updatedCareerPath);
 
-      // Recalculate progress
+      
       const completedCourses = updatedCourses.filter(course => course.completed).length;
       const totalCourses = updatedCourses.length;
       setProgress((completedCourses / totalCourses) * 100);
@@ -291,7 +291,7 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="space-y-4">
                   {careerPath?.skills.slice(0, 5).map((skill, index) => {
-                    // Generate random progress for demo
+                    
                     const skillProgress = Math.floor(Math.random() * 100);
                     return (
                       <div key={index}>

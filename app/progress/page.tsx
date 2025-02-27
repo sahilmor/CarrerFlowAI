@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Download, BarChart3, TrendingUp, Award, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+
 import { CourseCard, CourseProps } from "@/components/ui-components/CourseCard";
 
 // Mock data
@@ -70,7 +70,7 @@ const mockCertifications = [
 ];
 
 const ProgressPage = () => {
-  const { toast } = useToast();
+ 
   
   const totalCourses = mockCompletedCourses.length + mockInProgressCourses.length + 5; // +5 for upcoming courses
   const completedCourses = mockCompletedCourses.length;
@@ -80,17 +80,11 @@ const ProgressPage = () => {
   const totalSkills = mockSkills.length;
 
   const handleMarkComplete = (id: string) => {
-    toast({
-      title: "Course Marked as Complete",
-      description: "Your progress has been updated.",
-    });
+   
   };
 
   const handleDownloadCertificate = () => {
-    toast({
-      title: "Certificate Downloaded",
-      description: "Your certificate has been downloaded successfully.",
-    });
+    
   };
 
   return (

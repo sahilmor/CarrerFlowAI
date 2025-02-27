@@ -37,7 +37,9 @@ export default function SignupPage() {
   const { signup } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -48,33 +50,48 @@ export default function SignupPage() {
     },
   });
 
-  const onSubmit = async (values:any) => {
+  const onSubmit = async (values: SignupFormValues) => {
+    setIsLoading(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
     try {
       const result = await signup(values.name, values.email, values.password);
-      
+
       if (result.success) {
-        router.push("/dashboard");
+        setSuccessMessage("Account created successfully! Redirecting...");
+        setTimeout(() => router.push("/dashboard"), 2000); 
+      } else {
+        setErrorMessage(result.message || "Signup failed. Please try again.");
       }
     } catch (error) {
+      setErrorMessage("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
+      {/* ✅ Home Link */}
       <Link href="/" className="absolute left-4 top-4 md:left-8 md:top-8 flex items-center gap-2 font-bold">
         <Rocket className="h-6 w-6 text-primary" />
         <span>CareerPath AI</span>
       </Link>
+
+      {/* ✅ Signup Form Card */}
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold tracking-tight">Create an account</CardTitle>
-          <CardDescription>
-            Enter your information to create your account
-          </CardDescription>
+          <CardDescription>Enter your information to create your account</CardDescription>
         </CardHeader>
         <CardContent>
+          {errorMessage && <p className="text-red-500 text-sm mb-4">{errorMessage}</p>}
+          {successMessage && <p className="text-green-500 text-sm mb-4">{successMessage}</p>}
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {/* ✅ Full Name Field */}
               <FormField
                 control={form.control}
                 name="name"
@@ -88,6 +105,7 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
+              {/* ✅ Email Field */}
               <FormField
                 control={form.control}
                 name="email"
@@ -101,6 +119,7 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
+              {/* ✅ Password Field */}
               <FormField
                 control={form.control}
                 name="password"
@@ -114,6 +133,7 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
+              {/* ✅ Confirm Password Field */}
               <FormField
                 control={form.control}
                 name="confirmPassword"
@@ -127,6 +147,7 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
+              {/* ✅ Signup Button */}
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <>
@@ -140,29 +161,22 @@ export default function SignupPage() {
             </form>
           </Form>
         </CardContent>
+
+        {/* ✅ Footer Links */}
         <CardFooter className="flex flex-col space-y-4">
           <div className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link
-              href="/login"
-              className="underline underline-offset-4 hover:text-primary"
-            >
+            <Link href="/login" className="underline underline-offset-4 hover:text-primary">
               Sign in
             </Link>
           </div>
           <div className="text-center text-sm text-muted-foreground">
             By clicking sign up, you agree to our{" "}
-            <Link
-              href="#"
-              className="underline underline-offset-4 hover:text-primary"
-            >
+            <Link href="#" className="underline underline-offset-4 hover:text-primary">
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link
-              href="#"
-              className="underline underline-offset-4 hover:text-primary"
-            >
+            <Link href="#" className="underline underline-offset-4 hover:text-primary">
               Privacy Policy
             </Link>
             .

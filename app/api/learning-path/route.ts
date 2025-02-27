@@ -25,13 +25,13 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    // Check if user already has a learning path
+    
     const existingPath = await LearningPath.findOne({ userId });
     
     let learningPath;
     
     if (existingPath) {
-      // Update existing learning path
+      
       learningPath = await LearningPath.findOneAndUpdate(
         { userId },
         {
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
         { new: true }
       );
     } else {
-      // Create new learning path
+      
       learningPath = await LearningPath.create({
         userId,
         beginner: {

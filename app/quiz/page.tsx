@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Rocket, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+
 import axios from 'axios';
 
 const apiKey = process.env.NEXT_PUBLIC_API_KEY;
@@ -24,7 +24,6 @@ type QuizStep = {
 
 export default function QuizPage() {
   const router = useRouter();
-  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -211,11 +210,11 @@ export default function QuizPage() {
         const value = formData[field.name as keyof typeof formData];
         if (!value || (Array.isArray(value) && value.length === 0)) {
           isValid = false;
-          toast({
-            title: "Missing information",
-            description: `Please fill in the ${field.label} field.`,
-            variant: "destructive",
-          });
+          // toast({
+          //   title: "Missing information",
+          //   description: `Please fill in the ${field.label} field.`,
+          //   variant: "destructive",
+          // });
           break;
         }
       }
@@ -313,11 +312,11 @@ export default function QuizPage() {
       console.log(roadmapJson);
       // router.push("/dashboard");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "There was an error processing your quiz. Please try again.",
-        variant: "destructive",
-      });
+      // toast({
+      //   title: "Error",
+      //   description: "There was an error processing your quiz. Please try again.",
+      //   variant: "destructive",
+      // });
     } finally {
       setIsSubmitting(false);
     }

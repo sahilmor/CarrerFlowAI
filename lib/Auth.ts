@@ -1,3 +1,4 @@
+import "dotenv/config";
 import jwt from "jsonwebtoken";
 import { serialize } from "cookie";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -9,9 +10,9 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 /**
  * Generates a JWT token for authentication.
  */
-export function generateToken(payload: object): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
-}
+export function generateToken(userId: string): string {
+    return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
+  }
 
 /**
  * Sets the authentication cookie in the response.
