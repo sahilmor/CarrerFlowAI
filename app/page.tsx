@@ -62,13 +62,13 @@ const LandingPage = () => {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/quiz">
-              <Button size="lg" className="group">
+              <Button className="group">
                 Start Career Quiz{" "}
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
             <Link href="/login">
-              <Button size="lg" variant="outline">
+              <Button>
                 Sign In
               </Button>
             </Link>
@@ -106,7 +106,7 @@ const LandingPage = () => {
             </p>
           </SectionHeading>
           <Link href="/quiz">
-            <Button size="lg" className="group">
+            <Button className="group">
               Begin Career Assessment{" "}
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
