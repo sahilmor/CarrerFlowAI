@@ -31,12 +31,10 @@ export default function QuizPage() {
     email: "",
     currentRole: "",
     yearsExperience: "",
-    education: "",
+    educationLevel: "",
     skills: [] as string[],
     interests: [] as string[],
     careerGoals: "",
-    preferredWorkEnvironment: "",
-    learningStyle: "",
   });
 
   const steps: QuizStep[] = [
@@ -85,7 +83,7 @@ export default function QuizPage() {
           required: true,
         },
         {
-          name: "education",
+          name: "educationLevel",
           label: "Highest Education Level",
           type: "radio",
           options: [
@@ -105,22 +103,45 @@ export default function QuizPage() {
       description: "Select your skills and areas of interest",
       fields: [
         {
-          name: "skills",
-          label: "Technical Skills",
-          type: "checkbox",
-          options: [
-            { value: "programming", label: "Programming/Coding" },
-            { value: "data-analysis", label: "Data Analysis" },
-            { value: "design", label: "Design (UI/UX, Graphic)" },
-            { value: "writing", label: "Content Writing" },
-            { value: "marketing", label: "Digital Marketing" },
-            { value: "project-management", label: "Project Management" },
-            { value: "sales", label: "Sales" },
-            { value: "customer-service", label: "Customer Service" },
-            { value: "finance", label: "Finance/Accounting" },
-            { value: "leadership", label: "Leadership" },
+          "name": "skills",
+          "label": "Technical Skills",
+          "type": "checkbox",
+          "options": [
+            // Trending Skills
+            { "value": "artificial-intelligence", "label": "Artificial Intelligence (AI)" },
+            { "value": "machine-learning", "label": "Machine Learning (ML)" },
+            { "value": "deep-learning", "label": "Deep Learning" },
+            { "value": "cloud-computing", "label": "Cloud Computing (AWS, Azure, GCP)" },
+            { "value": "devops", "label": "DevOps (CI/CD, Kubernetes, Docker)" },
+            { "value": "cybersecurity", "label": "Cybersecurity (Ethical Hacking, Penetration Testing)" },
+            { "value": "data-science", "label": "Data Science (Statistics, Predictive Modeling)" },
+            { "value": "data-analysis", "label": "Data Analysis (SQL, Python, R)" },
+            { "value": "blockchain", "label": "Blockchain Development (Solidity, Web3)" },
+            { "value": "internet-of-things", "label": "Internet of Things (IoT)" },
+            { "value": "edge-computing", "label": "Edge Computing" },
+            { "value": "quantum-computing", "label": "Quantum Computing" },
+            { "value": "generative-ai", "label": "Generative AI (GANs, Transformers)" },
+            { "value": "natural-language-processing", "label": "Natural Language Processing (NLP)" },
+            { "value": "computer-vision", "label": "Computer Vision" },
+            { "value": "big-data", "label": "Big Data (Hadoop, Spark)" },
+            { "value": "automation", "label": "Automation (RPA, Scripting)" },
+            { "value": "full-stack-development", "label": "Full-Stack Development (MERN, MEAN)" },
+            { "value": "mobile-development", "label": "Mobile Development (React Native, Flutter)" },
+            { "value": "ui/ux-design", "label": "UI/UX Design" },
+            { "value": "product-management", "label": "Product Management" },
+            { "value": "entrepreneurship", "label": "Entrepreneurship" },
+            // Beginner Skills
+            { "value": "html", "label": "HTML" },
+            { "value": "css", "label": "CSS" },
+            { "value": "javascript", "label": "JavaScript" },
+            { "value": "python", "label": "Python (Beginner)" },
+            { "value": "sql", "label": "SQL (Beginner)" },
+            { "value": "git", "label": "Git/Version Control" },
+            { "value": "basic-networking", "label": "Basic Networking" },
+            { "value": "office-suite", "label": "Office Suite (Word, Excel, PowerPoint)" },
+            { "value": "project-management-basics", "label": "Project Management Basics" }
           ],
-          required: true,
+          "required": true
         },
         {
           name: "interests",
@@ -151,33 +172,6 @@ export default function QuizPage() {
           label: "What are your career goals for the next 3-5 years?",
           type: "textarea",
           placeholder: "Describe your career aspirations and goals...",
-          required: true,
-        },
-        {
-          name: "preferredWorkEnvironment",
-          label: "Preferred Work Environment",
-          type: "radio",
-          options: [
-            { value: "startup", label: "Startup" },
-            { value: "corporate", label: "Corporate" },
-            { value: "agency", label: "Agency" },
-            { value: "freelance", label: "Freelance/Independent" },
-            { value: "remote", label: "Remote-first" },
-            { value: "hybrid", label: "Hybrid" },
-          ],
-          required: true,
-        },
-        {
-          name: "learningStyle",
-          label: "Preferred Learning Style",
-          type: "radio",
-          options: [
-            { value: "visual", label: "Visual (videos, diagrams)" },
-            { value: "reading", label: "Reading (books, articles)" },
-            { value: "interactive", label: "Interactive (projects, exercises)" },
-            { value: "social", label: "Social (group learning, discussions)" },
-            { value: "mixed", label: "Mixed (combination of styles)" },
-          ],
           required: true,
         },
       ],
@@ -341,6 +335,9 @@ type RoadmapData = {
       // Store in localStorage for demo purposes
       localStorage.setItem("quizData", JSON.stringify(formData));
 
+      console.log("data:", formData);
+      
+      
       // Redirect to results page
       router.push("/dashboard");
     } catch (error) {
