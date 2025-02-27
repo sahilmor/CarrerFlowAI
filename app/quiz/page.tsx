@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Rocket, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import axios from 'axios';
 
 type QuizStep = {
   title: string;
@@ -243,6 +244,92 @@ export default function QuizPage() {
     }
   };
 
+
+  const findRoadMap = async () => {
+    const currentQuestion = `You are an experienced career counselor and roadmap planner, helping students and early-career developers shape their learning paths to become industry-ready. Below is the profile of a user in JSON format. Based on this, generate a step-by-step **learning roadmap** that guides the user from their current stage to their dream role. 
+The output should be strictly in JSON format with clear sections for each phase of the roadmap (Beginner, Intermediate, Advanced) along with estimated timelines, recommended best courses of some platform like udemy,coursera and likedin learing along with their links, and key projects to build at each step.
+User Profile (JSON):
+{
+name:"Nitish",
+email :"nitish@gmail.com",
+skills:["html","css","js"],
+experience:"0 - 5 years",
+carrerGoal:"full stack developer",
+educationLevel:"Bachelors",
+currentRole:"Student",
+areaOfInterest:["web development","front-end development","fullstack development"]
+}
+
+below i have the data type of the roadmap in JSON format strictly follow this format:
+type Course = {
+    platform: string;
+    name: string;
+    link: string;
+    focus: string;
+};
+
+type Project = {
+    name: string;
+    description: string;
+};
+
+type Step = {
+    title: string;
+    description: string;
+    courses: Course[];
+    projects: Project[];
+};
+
+type LearningPhase = {
+    timeline: string;
+    description: string;
+    steps: Step[];
+};
+
+type LearningPath = {
+    Beginner: LearningPhase;
+    Intermediate: LearningPhase;
+    Advanced: LearningPhase;
+};
+
+type RoadmapData = {
+    roadmap: {
+        user: {
+            name: string;
+            skills: string[];
+            experience: '0 - 5 years' | '5 - 10 years' | '10+ years';
+            collegeStudent: boolean;
+            dream: string;
+            currentRole: string;
+            areaOfInterest: string[];
+        };
+        learning_path: LearningPath;
+    };
+};`;
+    try {
+      const response = await axios({
+        url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyBfydMVeTuKMaIF2DekcUE9hGrYkGXj3A0",
+        method: "post",
+        data: {
+          contents: [{ parts: [{ text: currentQuestion }] }],
+        },
+      });
+
+      const result = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!result) {
+        throw new Error("No text found in response");
+      }
+
+      const jsonString = result.replace("```json\n", "").replace("\n```", "");
+      let roadmapJson = JSON.parse(jsonString);
+      console.log(roadmapJson);
+    } catch (error) {
+      console.error("Error in findRoadMap:", error);
+    }
+  };
+
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
 
@@ -250,10 +337,10 @@ export default function QuizPage() {
     try {
       // In a real app, this would be an API call to your backend
       await new Promise((resolve) => setTimeout(resolve, 3000));
-      
+
       // Store in localStorage for demo purposes
       localStorage.setItem("quizData", JSON.stringify(formData));
-      
+
       // Redirect to results page
       router.push("/dashboard");
     } catch (error) {
@@ -343,61 +430,61 @@ export default function QuizPage() {
 
   return (
     <div className="w-full h-[100dvh] flex items-center justify-center p-10">
-    <div className="w-3/4">
-
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Career Path Quiz</h1>
-        <p className="text-muted-foreground">
-          Complete this quiz to get personalized career recommendations and a learning roadmap.
-        </p>
-      </div>
-
-      <div className="mb-8">
-        <div className="flex justify-between mb-2 text-sm">
-          <span>Step {currentStep + 1} of {steps.length}</span>
-          <span>{Math.round(((currentStep + 1) / steps.length) * 100)}% Complete</span>
+      <div className="w-3/4">
+        <Button onClick={findRoadMap}>Find Roadmap</Button>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Career Path Quiz</h1>
+          <p className="text-muted-foreground">
+            Complete this quiz to get personalized career recommendations and a learning roadmap.
+          </p>
         </div>
-        <Progress value={((currentStep + 1) / steps.length) * 100} className="h-2" />
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{steps[currentStep].title}</CardTitle>
-          <CardDescription>{steps[currentStep].description}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {steps[currentStep].fields.map(renderField)}
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={handleBack}
-            disabled={currentStep === 0 || isSubmitting}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <Button onClick={handleNext} disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Analyzing...
-              </>
-            ) : currentStep === steps.length - 1 ? (
-              <>
-                Submit
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            ) : (
-              <>
-                Next
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>
+        <div className="mb-8">
+          <div className="flex justify-between mb-2 text-sm">
+            <span>Step {currentStep + 1} of {steps.length}</span>
+            <span>{Math.round(((currentStep + 1) / steps.length) * 100)}% Complete</span>
+          </div>
+          <Progress value={((currentStep + 1) / steps.length) * 100} className="h-2" />
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{steps[currentStep].title}</CardTitle>
+            <CardDescription>{steps[currentStep].description}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {steps[currentStep].fields.map(renderField)}
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              disabled={currentStep === 0 || isSubmitting}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+            <Button onClick={handleNext} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Analyzing...
+                </>
+              ) : currentStep === steps.length - 1 ? (
+                <Button onClick={findRoadMap}>
+                  Submit
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              ) : (
+                <>
+                  Next
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 }
