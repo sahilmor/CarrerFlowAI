@@ -242,7 +242,7 @@ export default function QuizPage() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     const currentQuestion = `You are an experienced career counselor and roadmap planner, helping students and early-career developers shape their learning paths to become industry-ready. Below is the profile of a user in JSON format. Based on this, generate a step-by-step learning roadmap that guides the user from their current stage to their dream role. 
-    The output should be strictly in JSON format with clear sections for each phase of the roadmap (Beginner, Intermediate, Advanced) along with estimated timelines, recommended best courses of some platform like udemy,coursera and likedin learing along with their links, and key projects to build at each step.
+    The output should be strictly in JSON format with clear sections for each phase of the roadmap (Beginner, Intermediate, Advanced) along with estimated timelines, recommended one best course on the whole internet along with its link and the skills that  will be enhanced by user after comleting the course, and key projects to build at each step.
     User Profile (JSON):
     ${JSON.stringify(formData)}
 
@@ -251,7 +251,8 @@ export default function QuizPage() {
         platform: string;
         name: string;
         link: string;
-        focus: string;
+        skills: string[];
+        description : string;
     };
 
     type Project = {
@@ -262,7 +263,7 @@ export default function QuizPage() {
     type Step = {
         title: string;
         description: string;
-        courses: Course[];
+        courses: Course;
         projects: Project[];
     };
 
@@ -283,7 +284,7 @@ export default function QuizPage() {
             user: {
                 name: string;
                 skills: string[];
-                experience: '0 - 5 years' | '5 - 10 years' | '10+ years';
+                experience: string;
                 collegeStudent: boolean;
                 dream: string;
                 currentRole: string;
