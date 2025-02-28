@@ -1,18 +1,16 @@
-'use client'
+"use client";
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { X, Menu } from "lucide-react";
-// import { useRecoilValue } from "recoil";
-// import { isAuthenticatedState } from "@/atoms/authAtoms";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export const NavigationBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const isAuthenticated = true;
   const pathname = usePathname();
+  const isAuthenticated = true; // This should be replaced with actual auth logic
 
-  
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Quiz", path: "/quiz" },
@@ -21,6 +19,7 @@ export const NavigationBar = () => {
           { name: "Dashboard", path: "/dashboard" },
           { name: "Roadmap", path: "/roadmap" },
           { name: "Progress", path: "/progress" },
+          { name: "RoadMap Dashboard", path: "/roadmap-dash" },
         ]
       : []),
   ];
@@ -35,7 +34,7 @@ export const NavigationBar = () => {
             CareerFlow
           </span>
         </Link>
-        
+
         <nav className="hidden md:flex items-center space-x-6">
           {navLinks.map((link) => (
             <Link
@@ -50,10 +49,9 @@ export const NavigationBar = () => {
               {link.name}
             </Link>
           ))}
-          {/* <UserMenu /> */}
         </nav>
 
-        <button className="md:hidden" onClick={toggleMenu}>
+        <button className="md:hidden" onClick={toggleMenu} aria-label="Toggle Menu">
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
@@ -67,7 +65,7 @@ export const NavigationBar = () => {
                 key={link.path}
                 href={link.path}
                 className={`block px-4 py-2 text-sm ${
-                  location.pathname === link.path
+                  pathname === link.path
                     ? "text-primary font-medium"
                     : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
                 }`}
@@ -79,7 +77,9 @@ export const NavigationBar = () => {
             <div className="px-4 pb-2">
               {!isAuthenticated && (
                 <Button asChild size="sm" variant="secondary" className="w-full">
-                  <Link href="/login" onClick={() => setIsMenuOpen(false)}>Sign In</Link>
+                  <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+                    Sign In
+                  </Link>
                 </Button>
               )}
             </div>
