@@ -8,6 +8,7 @@ if (!MONGODB_URI) {
 
 async function connectToDatabase() {
     if (mongoose.connection.readyState === 1) {
+        console.log('already connected');
         return mongoose;
     }
     const opts = {

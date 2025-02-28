@@ -1,5 +1,5 @@
 'use client'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -9,159 +9,15 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { CourseCard, CourseProps } from "@/components/ui-components/CourseCard";
 import { RoadmapStep } from "@/components/ui-components/RoadmapStep";
-
-interface RoadmapStepData {
-  step: number;
-  title: string;
-  description: string;
-  skills: string[];
-  completed: boolean;
-  course: CourseProps;
-}
-
-const mockRoadmap: RoadmapStepData[] = [
-  {
-    step: 1,
-    title: "HTML & CSS Fundamentals",
-    description: "Master the basics of web development with HTML and CSS.",
-    skills: ["HTML5", "CSS3", "Responsive Design"],
-    completed: true,
-    course: {
-      id: "course-1",
-      title: "HTML & CSS Essentials",
-      description: "Learn the fundamentals of web development with HTML and CSS.",
-      platform: "Codecademy",
-      duration: "8 hours",
-      level: "Beginner",
-      link: "https://example.com/course",
-      completed: true,
-    },
-  },
-  {
-    step: 2,
-    title: "JavaScript Essentials",
-    description: "Learn JavaScript programming and DOM manipulation.",
-    skills: ["JavaScript", "DOM", "ES6+"],
-    completed: true,
-    course: {
-      id: "course-2",
-      title: "JavaScript Basics",
-      description: "Introduction to JavaScript programming for beginners.",
-      platform: "freeCodeCamp",
-      duration: "10 hours",
-      level: "Beginner",
-      link: "https://example.com/course",
-      completed: true,
-    },
-  },
-  {
-    step: 3,
-    title: "Advanced JavaScript",
-    description: "Deep dive into advanced JavaScript concepts.",
-    skills: ["Closures", "Promises", "Async/Await"],
-    completed: false,
-    course: {
-      id: "course-3",
-      title: "Advanced JavaScript Concepts",
-      description: "Master complex JavaScript topics including closures, prototypes, and async patterns to build more efficient applications.",
-      platform: "Udemy",
-      duration: "12 hours",
-      level: "Intermediate",
-      link: "https://example.com/course",
-      completed: false,
-    },
-  },
-  {
-    step: 4,
-    title: "React & Frontend Frameworks",
-    description: "Build interactive UI components with React.",
-    skills: ["React", "Redux", "Hooks"],
-    completed: false,
-    course: {
-      id: "course-4",
-      title: "React & Redux Fundamentals",
-      description: "Learn the core concepts of React and state management with Redux to build interactive UIs.",
-      platform: "Coursera",
-      duration: "20 hours",
-      level: "Intermediate",
-      link: "https://example.com/course",
-      completed: false,
-    },
-  },
-  {
-    step: 5,
-    title: "Backend Development",
-    description: "Create server-side applications with Node.js.",
-    skills: ["Node.js", "Express", "MongoDB"],
-    completed: false,
-    course: {
-      id: "course-5",
-      title: "Node.js Backend Development",
-      description: "Build scalable backend services with Node.js, Express, and MongoDB.",
-      platform: "Udacity",
-      duration: "25 hours",
-      level: "Intermediate",
-      link: "https://example.com/course",
-      completed: false,
-    },
-  },
-  {
-    step: 6,
-    title: "Full Stack Projects",
-    description: "Build complete web applications from start to finish.",
-    skills: ["Full Stack", "API Design", "Authentication"],
-    completed: false,
-    course: {
-      id: "course-6",
-      title: "Full Stack Web Development",
-      description: "Create complete web applications with modern frontend and backend technologies.",
-      platform: "Pluralsight",
-      duration: "30 hours",
-      level: "Advanced",
-      link: "https://example.com/course",
-      completed: false,
-    },
-  },
-  {
-    step: 7,
-    title: "DevOps & Deployment",
-    description: "Learn to deploy and manage web applications in the cloud.",
-    skills: ["Docker", "CI/CD", "AWS/Azure"],
-    completed: false,
-    course: {
-      id: "course-7",
-      title: "DevOps for Developers",
-      description: "Master the tools and practices for deploying and managing applications in production.",
-      platform: "edX",
-      duration: "15 hours",
-      level: "Advanced",
-      link: "https://example.com/course",
-      completed: false,
-    },
-  },
-  {
-    step: 8,
-    title: "Career Preparation",
-    description: "Prepare for job interviews and build your portfolio.",
-    skills: ["Portfolio", "Technical Interviews", "Networking"],
-    completed: false,
-    course: {
-      id: "course-8",
-      title: "Technical Interview Preparation",
-      description: "Learn strategies and practice solving common coding interview questions.",
-      platform: "Educative",
-      duration: "10 hours",
-      level: "Intermediate",
-      link: "https://example.com/course",
-      completed: false,
-    },
-  },
-];
+import { mockRoadmap, RoadmapStepData } from "@/types/roadMap";
+import { useAtomValue } from "jotai";
+import { roadmapDataAtom } from "@/recoil/atom";
 
 const AdvancedMap = () => {
   const [selectedStep, setSelectedStep] = useState<RoadmapStepData | null>(null);
   const { toast } = useToast();
-  
+  const advancedRoadmap = useAtomValue(roadmapDataAtom)[0]?.learningPath?.Advanced ?? null;
+
   const completedSteps = mockRoadmap.filter(step => step.completed).length;
   const totalSteps = mockRoadmap.length;
   const progress = Math.round((completedSteps / totalSteps) * 100);
@@ -169,6 +25,7 @@ const AdvancedMap = () => {
   const handleStepClick = (step: RoadmapStepData) => {
     setSelectedStep(step);
   };
+  console.log("advancedRoadmap", advancedRoadmap)
 
   const handleDownload = () => {
     toast({
@@ -189,9 +46,9 @@ const AdvancedMap = () => {
               </p>
             </div>
             <div className="flex gap-3 mt-4 md:mt-0">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="flex items-center"
                 onClick={handleDownload}
               >
@@ -204,7 +61,7 @@ const AdvancedMap = () => {
               </Button>
             </div>
           </div>
-          
+
           <Card className="glass-card">
             <CardContent className="p-6 space-y-4">
               <div className="flex justify-between text-sm mb-1">
@@ -222,18 +79,23 @@ const AdvancedMap = () => {
 
         {/* Roadmap Timeline */}
         <div className="mb-10 pl-4">
-          {mockRoadmap.map((step, index) => (
-            <RoadmapStep
-              key={index}
-              step={step.step}
-              title={step.title}
-              description={step.description}
-              skills={step.skills}
-              completed={step.completed}
-              course={step.course}
-              onClick={() => handleStepClick(step)}
-            />
-          ))}
+          {advancedRoadmap?.steps && advancedRoadmap.steps.length > 0 ? (
+            advancedRoadmap.steps.map((step: any, index: number) => (
+              <RoadmapStep
+                key={index}
+                step={index + 1}
+                title={step?.title ?? ""}
+                description={step?.description ?? ""}
+                skills={step?.courses?.skills ?? []}
+                completed={step?.completed ?? 0}
+                course={step?.course ?? ""}
+                onClick={() => handleStepClick(step)}
+              />
+            ))
+          ) : (
+            <p>No steps available</p> // Handle empty state
+          )}
+
         </div>
       </div>
 
@@ -248,7 +110,7 @@ const AdvancedMap = () => {
                     {selectedStep.title}
                   </DialogTitle>
                   <DialogDescription className="mt-1">
-                    Step {selectedStep.step} of {totalSteps}
+                    Step {selectedStep.step} of {advancedRoadmap.steps.length}
                   </DialogDescription>
                 </div>
                 {selectedStep.completed && (
@@ -263,22 +125,28 @@ const AdvancedMap = () => {
                 <h3 className="font-medium mb-2">Description</h3>
                 <p className="text-muted-foreground">{selectedStep.description}</p>
               </div>
-              
+
               <div>
                 <h3 className="font-medium mb-2">Skills You'll Learn</h3>
                 <div className="flex flex-wrap gap-1.5">
-                  {selectedStep.skills.map((skill, i) => (
-                    <Badge key={i} variant="secondary">
-                      {skill}
-                    </Badge>
-                  ))}
+                  {selectedStep?.skills?.length ? (
+                    selectedStep.skills.map((skill, i) => (
+                      <Badge key={i} variant="secondary">
+                        {skill}
+                      </Badge>
+                    ))
+                  ) : (
+                    <p>No skills available</p> // Handle undefined or empty array
+                  )}
+
                 </div>
               </div>
-              
+
               <div>
                 <h3 className="font-medium mb-3">Recommended Course</h3>
-                <CourseCard 
-                  course={selectedStep.course} 
+                <CourseCard
+                  course={selectedStep.courses}
+                  level="Beginner"
                   onMarkComplete={selectedStep.completed ? undefined : (id) => {
                     // This would update the course completion status in a real app
                     toast({
@@ -286,7 +154,7 @@ const AdvancedMap = () => {
                       description: "Your progress has been updated.",
                     });
                     setSelectedStep(null);
-                  }} 
+                  }}
                 />
               </div>
             </div>

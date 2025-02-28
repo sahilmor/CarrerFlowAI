@@ -16,11 +16,12 @@ export interface CourseProps {
 }
 
 interface CourseCardProps {
+  level: "Beginner" | "Intermediate" | "Advanced";
   course: CourseProps;
   onMarkComplete?: (id: string) => void;
 }
 
-export const CourseCard = ({ course, onMarkComplete }: CourseCardProps) => {
+export const CourseCard = ({ level,course, onMarkComplete }: CourseCardProps) => {
   const levelColors = {
     Beginner: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
     Intermediate: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
@@ -31,8 +32,8 @@ export const CourseCard = ({ course, onMarkComplete }: CourseCardProps) => {
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg glass-card animate-scale-in">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start mb-2">
-          <Badge variant="outline" className={levelColors[course.level]}>
-            {course.level}
+          <Badge variant="outline" className={levelColors[level]}>
+            {level}
           </Badge>
           {course.completed && (
             <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">

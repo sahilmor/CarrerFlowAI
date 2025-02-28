@@ -1,5 +1,5 @@
 'use client'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -10,11 +10,14 @@ import { useToast } from "@/hooks/use-toast";
 import { CourseCard, CourseProps } from "@/components/ui-components/CourseCard";
 import { RoadmapStep } from "@/components/ui-components/RoadmapStep";
 import { mockRoadmap, RoadmapStepData } from "@/types/roadMap";
+import { useAtomValue } from "jotai";
+import { roadmapDataAtom } from "@/recoil/atom";
 
 const BeginnerMap = () => {
   const [selectedStep, setSelectedStep] = useState<RoadmapStepData | null>(null);
   const { toast } = useToast();
-  
+  const beginnnerRoadmap = useAtomValue(roadmapDataAtom)[0]?.learningPath?.Beginner ?? null;
+
   const completedSteps = mockRoadmap.filter(step => step.completed).length;
   const totalSteps = mockRoadmap.length;
   const progress = Math.round((completedSteps / totalSteps) * 100);
@@ -22,6 +25,7 @@ const BeginnerMap = () => {
   const handleStepClick = (step: RoadmapStepData) => {
     setSelectedStep(step);
   };
+  console.log("beginnnerRoadmap", beginnnerRoadmap)
 
   const handleDownload = () => {
     toast({
@@ -42,9 +46,9 @@ const BeginnerMap = () => {
               </p>
             </div>
             <div className="flex gap-3 mt-4 md:mt-0">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="flex items-center"
                 onClick={handleDownload}
               >
@@ -57,7 +61,7 @@ const BeginnerMap = () => {
               </Button>
             </div>
           </div>
-          
+
           <Card className="glass-card">
             <CardContent className="p-6 space-y-4">
               <div className="flex justify-between text-sm mb-1">
@@ -75,18 +79,23 @@ const BeginnerMap = () => {
 
         {/* Roadmap Timeline */}
         <div className="mb-10 pl-4">
-          {mockRoadmap.map((step, index) => (
-            <RoadmapStep
-              key={index}
-              step={step.step}
-              title={step.title}
-              description={step.description}
-              skills={step.skills}
-              completed={step.completed}
-              course={step.course}
-              onClick={() => handleStepClick(step)}
-            />
-          ))}
+          {beginnnerRoadmap?.steps && beginnnerRoadmap.steps.length > 0 ? (
+            beginnnerRoadmap.steps.map((step: any, index: number) => (
+              <RoadmapStep
+                key={index}
+                step={index + 1}
+                title={step?.title ?? ""}
+                description={step?.description ?? ""}
+                skills={step?.courses?.skills ?? []}
+                completed={step?.completed ?? 0}
+                course={step?.course ?? ""}
+                onClick={() => handleStepClick(step)}
+              />
+            ))
+          ) : (
+            <p>No steps available</p> // Handle empty state
+          )}
+
         </div>
       </div>
 
@@ -101,7 +110,7 @@ const BeginnerMap = () => {
                     {selectedStep.title}
                   </DialogTitle>
                   <DialogDescription className="mt-1">
-                    Step {selectedStep.step} of {totalSteps}
+                    Step {selectedStep.step} of {beginnnerRoadmap.steps.length}
                   </DialogDescription>
                 </div>
                 {selectedStep.completed && (
@@ -116,22 +125,28 @@ const BeginnerMap = () => {
                 <h3 className="font-medium mb-2">Description</h3>
                 <p className="text-muted-foreground">{selectedStep.description}</p>
               </div>
-              
+
               <div>
                 <h3 className="font-medium mb-2">Skills You'll Learn</h3>
                 <div className="flex flex-wrap gap-1.5">
-                  {selectedStep.skills.map((skill, i) => (
-                    <Badge key={i} variant="secondary">
-                      {skill}
-                    </Badge>
-                  ))}
+                  {selectedStep?.skills?.length ? (
+                    selectedStep.skills.map((skill, i) => (
+                      <Badge key={i} variant="secondary">
+                        {skill}
+                      </Badge>
+                    ))
+                  ) : (
+                    <p>No skills available</p> // Handle undefined or empty array
+                  )}
+
                 </div>
               </div>
-              
+
               <div>
                 <h3 className="font-medium mb-3">Recommended Course</h3>
-                <CourseCard 
-                  course={selectedStep.course} 
+                <CourseCard
+                  course={selectedStep.courses}
+                  level="Beginner"
                   onMarkComplete={selectedStep.completed ? undefined : (id) => {
                     // This would update the course completion status in a real app
                     toast({
@@ -139,7 +154,7 @@ const BeginnerMap = () => {
                       description: "Your progress has been updated.",
                     });
                     setSelectedStep(null);
-                  }} 
+                  }}
                 />
               </div>
             </div>
