@@ -145,7 +145,7 @@ const BeginnerMap = () => {
               <div>
                 <h3 className="font-medium mb-3">Recommended Course</h3>
                 <CourseCard
-                  course={selectedStep.courses}
+                  course={selectedStep.course}
                   level="Beginner"
                   onMarkComplete={selectedStep.completed ? undefined : (id) => {
                     // This would update the course completion status in a real app
