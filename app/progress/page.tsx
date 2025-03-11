@@ -186,7 +186,7 @@ const ProgressPage = () => {
                 </h2>
                 <div className="grid md:grid-cols-2 gap-4">
                   {mockCompletedCourses.map(course => (
-                    <CourseCard key={course.id} course={course} />
+                    <CourseCard key={course.id} course={course} level={course?.level}/>
                   ))}
                 </div>
               </div>
@@ -200,7 +200,7 @@ const ProgressPage = () => {
                 </h2>
                 <div className="grid md:grid-cols-2 gap-4">
                   {mockInProgressCourses.map(course => (
-                    <CourseCard key={course.id} course={course} onMarkComplete={handleMarkComplete} />
+                    <CourseCard key={course.id} course={course} onMarkComplete={handleMarkComplete} level={course?.level} />
                   ))}
                 </div>
               </div>
