@@ -384,7 +384,7 @@ export default function QuizPage() {
                   <Checkbox
                     id={`${field.name}-${option.value}`}
                     checked={fieldValue.includes(option.value)}
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={(checked: any) =>
                       handleCheckboxChange(field.name, option.value, !!checked)
                     }
                   />

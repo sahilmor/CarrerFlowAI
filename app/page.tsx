@@ -113,7 +113,7 @@ const LandingPage = () => {
           </Link>
         </div>
       </section>
-      <ContactSection />
+      {/* <ContactSection /> */}
 
      <Footer />
     </div>
