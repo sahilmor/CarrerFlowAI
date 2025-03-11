@@ -244,6 +244,7 @@ export default function QuizPage() {
     }
   };
 
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     const currentQuestion = `You are an experienced career counselor and roadmap planner, helping students and early-career developers shape their learning paths to become industry-ready. Below is the profile of a user in JSON format. Based on this, generate a step-by-step learning roadmap that guides the user from their current stage to their dream role. 
@@ -319,7 +320,21 @@ export default function QuizPage() {
       let roadmapJson = JSON.parse(jsonString);
       console.log(roadmapJson);
 
-    } catch (error) {
+      const learningPathData = roadmapJson?.roadmap?.learning_path;
+    const userEmail = "admin@admin.com"; // Replace with actual user email from session
+
+    // await axios.post("/api/roadmap", { learning_path: learningPathData, userEmail });
+    router.push("/roadmap");
+
+    toast({
+      title: "Success",
+      description: "Your roadmap has been saved!",
+      variant: "default",
+    });
+
+      }
+
+    catch (error) {
       toast({
         title: "Error",
         description: "There was an error processing your quiz. Please try again.",
