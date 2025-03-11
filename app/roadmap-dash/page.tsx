@@ -1,4 +1,4 @@
-import RoadmapDashboard from "@/app/api/roadmap-dash/route";
+import RoadmapPage from "../roadmap/page";
 
 export default function RoadmapDashPage() {
   return (
@@ -7,7 +7,7 @@ export default function RoadmapDashPage() {
       <p>Welcome to your roadmap dashboard.</p>
       
       {/* Fetch and display roadmaps */}
-      <RoadmapDashboard />
+      <RoadmapPage />
     </div>
   );
 }
