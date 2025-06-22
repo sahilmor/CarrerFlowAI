@@ -48,15 +48,15 @@ const LandingPage = () => {
   return (
     <div className="flex flex-col min-h-screen pt-16">
       <NavigationBar />
-      
+
       {/* Hero Section */}
-      <section className="flex flex-col items-center justify-center px-4 py-20 md:py-32 animate-fade-down">
+      <section className="flex flex-col items-center justify-center px-4 py-20 md:py-32 animate-fade-down bg-black/50 bg-[url('https://raw.githubusercontent.com/MrZorawaR/image/refs/heads/main/background-carrer.jpg')]  bg-cover bg-center bg-blend-multiply">
         <div className="container max-w-6xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight mb-6">
             Discover Your Ideal{" "}
             <span className="text-primary">Career Path</span>
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
+          <p className="text-xl  max-w-2xl mx-auto mb-10">
             Our AI-powered platform analyzes your skills and interests to create a
             personalized learning roadmap that guides you to your dream career.
           </p>
@@ -69,7 +69,7 @@ const LandingPage = () => {
             </Link>
             <Link href="/sign-in">
               <Button>
-                
+
                 Sign In
               </Button>
             </Link>
@@ -121,7 +121,7 @@ const LandingPage = () => {
       </section>
       {/* <ContactSection /> */}
 
-     <Footer />
+      <Footer />
     </div>
   );
 };
